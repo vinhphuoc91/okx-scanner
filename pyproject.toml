@@ -1,0 +1,155 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "okx-scanner"
+version = "0.1.0"
+description = "OKX Opportunity Scanner - Real-time crypto market opportunity detection"
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "Proprietary" }
+authors = [
+    { name = "OKX Scanner Team" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "Framework :: FastAPI",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "gunicorn>=23.0.0",
+
+    # Data validation & settings
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "email-validator>=2.2.0",
+
+    # Database
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14.0",
+    "psycopg[binary]>=3.2.0",
+
+    # Cache & queue
+    "redis>=5.2.0",
+    "hiredis>=3.0.0",
+
+    # HTTP client (for OKX API)
+    "httpx>=0.27.0",
+    "websockets>=13.1",
+    "tenacity>=9.0.0",
+
+    # Logging & observability
+    "structlog>=24.4.0",
+    "python-json-logger>=2.0.7",
+
+    # Time & utils
+    "python-dateutil>=2.9.0",
+    "orjson>=3.10.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "httpx>=0.27.0",
+    "fakeredis>=2.26.0",
+
+    # Linting & formatting
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "black>=24.10.0",
+
+    # Type stubs
+    "types-python-dateutil>=2.9.0",
+]
+
+[project.scripts]
+okx-api = "src.api.app:run"
+okx-worker = "src.worker.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "config*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "S101",  # use of assert (OK in tests)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov=config",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "unit: Unit tests (fast, isolated)",
+    "integration: Integration tests (require DB/Redis)",
+    "slow: Slow tests (>1s)",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["src", "config"]
+omit = ["*/tests/*", "*/alembic/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

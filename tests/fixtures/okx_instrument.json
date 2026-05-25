@@ -1,0 +1,14 @@
+{
+  "instId": "BTC-USDT",
+  "instType": "SPOT",
+  "baseCcy": "BTC",
+  "quoteCcy": "USDT",
+  "settleCcy": "",
+  "tickSz": "0.1",
+  "lotSz": "0.00000001",
+  "minSz": "0.00001",
+  "ctVal": "",
+  "state": "live",
+  "listTime": "1597026383000",
+  "expTime": ""
+}

@@ -1,0 +1,149 @@
+# =============================================================================
+# OKX Scanner - Docker Compose
+# =============================================================================
+# Services:
+#   - postgres: PostgreSQL 16 (primary store)
+#   - redis: Redis 7 (cache + queue)
+#   - api: FastAPI HTTP service
+#   - worker: Background scanner worker
+# =============================================================================
+
+name: okx-scanner
+
+x-app-env: &app-env
+  APP_NAME: ${APP_NAME:-okx-scanner}
+  APP_ENV: ${APP_ENV:-development}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+  APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: ${POSTGRES_USER:-okx}
+  POSTGRES_PASSWORD: okx_dev_password
+  POSTGRES_DB: ${POSTGRES_DB:-okx_scanner}
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  OKX_API_KEY: ${OKX_API_KEY:-}
+  OKX_API_SECRET: ${OKX_API_SECRET:-}
+  OKX_API_PASSPHRASE: ${OKX_API_PASSPHRASE:-}
+  OKX_USE_TESTNET: ${OKX_USE_TESTNET:-true}
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: okx-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-okx}
+      POSTGRES_PASSWORD: okx_dev_password
+      POSTGRES_DB: ${POSTGRES_DB:-okx_scanner}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT_HOST:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-okx} -d ${POSTGRES_DB:-okx_scanner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - okx-net
+
+  # ---------------------------------------------------------------------------
+  # Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: okx-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - okx-net
+
+  # ---------------------------------------------------------------------------
+  # API
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: okx-scanner:latest
+    container_name: okx-api
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      API_WORKERS: ${API_WORKERS:-4}
+    ports:
+      - "${API_PORT_HOST:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - okx-net
+
+  # ---------------------------------------------------------------------------
+  # Worker
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: okx-scanner:latest
+    container_name: okx-worker
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    command: ["python", "-m", "src.worker.main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - okx-net
+
+# =============================================================================
+# Networks & Volumes
+# =============================================================================
+networks:
+  okx-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
