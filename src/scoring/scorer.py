@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -353,12 +353,12 @@ class OpportunityScorer:
                 "model_version": scored.model_version,
             },
             model_version=scored.model_version,
-            scored_at=datetime.now(tz=UTC),
-            created_at=datetime.now(tz=UTC),
+            scored_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=timezone.utc),
         )
         self._session.add(row)
         opp.status = OpportunityStatus.SCORED
-        opp.updated_at = datetime.now(tz=UTC)
+        opp.updated_at = datetime.now(tz=timezone.utc)
         self._session.flush()
 
         log.info(

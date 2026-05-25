@@ -12,7 +12,7 @@ Usage::
 from __future__ import annotations
 
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -58,7 +58,7 @@ def _to_instrument_type(value: str) -> InstrumentType:
 
 def _upsert_instrument(session, normalized, existing: Instrument | None) -> str:
     """Insert or update one instrument row. Returns ``inserted`` or ``updated``."""
-    now = datetime.now(tz=UTC)
+    now = datetime.now(tz=timezone.utc)
     if existing is None:
         row = Instrument(
             inst_id=normalized.inst_id,

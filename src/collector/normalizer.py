@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -51,7 +51,7 @@ def _parse_timestamp(value: Any) -> datetime | None:
         ms = int(value)
         if ms < _MS_EPOCH_THRESHOLD:
             ms *= 1000
-        return datetime.fromtimestamp(ms / 1000.0, tz=UTC)
+        return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
     except (ValueError, TypeError, OSError):
         return None
 

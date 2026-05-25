@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from config.settings import Settings, get_settings
 from src.schemas.strategy import Candidate, Direction, StrategyType
@@ -99,7 +99,7 @@ class StatArbitrageStrategy(BaseStrategy):
                     "spot_inst_id": spot.inst_id,
                     "last_price": str(perp.last_price),
                 },
-                detected_at=datetime.now(tz=UTC),
+                detected_at=datetime.now(tz=timezone.utc),
                 confidence=round(confidence, 4),
             )
             log.info(

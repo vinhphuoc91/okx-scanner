@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Callable
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -112,7 +112,7 @@ class ScannerLoop:
 
     def run_forever(self) -> None:
         """Main worker loop until :meth:`request_shutdown` is called."""
-        started_at = datetime.now(tz=UTC)
+        started_at = datetime.now(tz=timezone.utc)
         self._state.mark_running(started_at)
         log.info("scanner.start", env=self._settings.app_env.value)
 
@@ -328,7 +328,7 @@ class ScannerLoop:
                 log.info("trade.pending_resolved", count=confirmed)
 
             session.commit()
-            scanned_at = datetime.now(tz=UTC)
+            scanned_at = datetime.now(tz=timezone.utc)
             self._state.set_tier_scan(tier, scanned_at)
             stats.duration_seconds = time.perf_counter() - started
 

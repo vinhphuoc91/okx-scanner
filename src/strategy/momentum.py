@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from config.settings import Settings, get_settings
@@ -205,7 +205,7 @@ class MomentumStrategy(BaseStrategy):
                 strategy_type=StrategyType.MOMENTUM,
                 direction=direction,
                 raw_signals=signals,
-                detected_at=datetime.now(tz=UTC),
+                detected_at=datetime.now(tz=timezone.utc),
                 confidence=confidence,
             )
             log.info(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -157,8 +157,8 @@ class RiskFilter:
             reason_code=reason_code,
             reason_detail=reason_detail,
             snapshot=decision.raw_checks,
-            decided_at=datetime.now(tz=UTC),
-            created_at=datetime.now(tz=UTC),
+            decided_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=timezone.utc),
         )
         self._session.add(row)
 
@@ -167,7 +167,7 @@ class RiskFilter:
             opp.status = (
                 OpportunityStatus.APPROVED if decision.approved else OpportunityStatus.REJECTED
             )
-            opp.updated_at = datetime.now(tz=UTC)
+            opp.updated_at = datetime.now(tz=timezone.utc)
 
         self._session.flush()
         log.info(

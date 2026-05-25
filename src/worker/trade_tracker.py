@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -35,8 +35,8 @@ def _parse_utc(value: str | datetime) -> datetime:
     else:
         dt = datetime.fromisoformat(value)
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=UTC)
-    return dt.astimezone(UTC)
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 class PaperTradeTracker:
@@ -304,7 +304,7 @@ class PaperTradeTracker:
         """Evaluate pending M15 confirmations; return count resolved."""
         pending_list, stale_ids = self._pending.list_all_with_stale()
         opp_repo = OpportunityRepository(session)
-        now = datetime.now(tz=UTC)
+        now = datetime.now(tz=timezone.utc)
         resolved = 0
 
         for opp_id in stale_ids:
@@ -449,7 +449,7 @@ class PaperTradeTracker:
             return 0
 
         opp_repo = OpportunityRepository(session)
-        now = datetime.now(tz=UTC)
+        now = datetime.now(tz=timezone.utc)
         min_age = timedelta(minutes=MIN_CONFIRM_MINUTES)
         resolved = 0
         for opp in orphans:
@@ -457,7 +457,7 @@ class PaperTradeTracker:
                 continue
             updated_at = opp.updated_at
             if updated_at.tzinfo is None:
-                updated_at = updated_at.replace(tzinfo=UTC)
+                updated_at = updated_at.replace(tzinfo=timezone.utc)
             if now - updated_at < min_age:
                 continue
             opp_repo.update_opportunity_status(opp.id, OpportunityStatus.CONFIRM_FAILED)
@@ -532,7 +532,7 @@ class PaperTradeTracker:
             return 0
 
         prices = self._build_price_map(running, ticker_map, client or self._client)
-        now = datetime.now(tz=UTC)
+        now = datetime.now(tz=timezone.utc)
         closed_count = 0
 
         for trade in running:

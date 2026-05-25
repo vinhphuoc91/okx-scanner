@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from config.settings import Settings, get_settings
@@ -138,7 +138,7 @@ class FundingStrategy(BaseStrategy):
 
             threshold = short_threshold if direction == Direction.SHORT else long_threshold
             confidence = _funding_confidence(rate, threshold, direction)
-            detected_at = datetime.now(tz=UTC)
+            detected_at = datetime.now(tz=timezone.utc)
 
             candidate = Candidate(
                 symbol=inst_id,

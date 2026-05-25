@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -221,7 +221,7 @@ class StrategySettingsRepository:
             else:
                 setattr(row, field, value)
 
-        row.updated_at = datetime.now(tz=UTC)
+        row.updated_at = datetime.now(tz=timezone.utc)
         self._session.flush()
         log.info("strategy_settings.updated", strategy=key, fields=list(kwargs.keys()))
         return row
@@ -231,7 +231,7 @@ class StrategySettingsRepository:
         row = self.get_global_config()
         for field, value in kwargs.items():
             setattr(row, field, value)
-        row.updated_at = datetime.now(tz=UTC)
+        row.updated_at = datetime.now(tz=timezone.utc)
         self._session.flush()
         log.info("system_config.updated", fields=list(kwargs.keys()))
         return row
@@ -254,13 +254,13 @@ class StrategySettingsRepository:
                     setattr(row, field, _decimal(value))
                 else:
                     setattr(row, field, value)
-            row.updated_at = datetime.now(tz=UTC)
+            row.updated_at = datetime.now(tz=timezone.utc)
             result[strategy_type] = row
 
         global_row = self.get_global_config()
         for field, value in DEFAULT_GLOBAL_CONFIG.items():
             setattr(global_row, field, value)
-        global_row.updated_at = datetime.now(tz=UTC)
+        global_row.updated_at = datetime.now(tz=timezone.utc)
 
         self._session.flush()
         log.info("strategy_settings.reset")

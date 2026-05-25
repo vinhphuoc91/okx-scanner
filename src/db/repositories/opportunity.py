@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -61,7 +61,7 @@ class OpportunityRepository:
             else OpportunitySide.SHORT
         )
 
-        now = datetime.now(tz=UTC)
+        now = datetime.now(tz=timezone.utc)
         row = Opportunity(
             instrument_id=instrument.id,
             strategy=candidate.strategy_type.value,
@@ -112,7 +112,7 @@ class OpportunityRepository:
             status if isinstance(status, OpportunityStatus) else OpportunityStatus(status)
         )
         row.status = resolved
-        row.updated_at = datetime.now(tz=UTC)
+        row.updated_at = datetime.now(tz=timezone.utc)
         log.info(
             "opportunity.status.updated",
             opportunity_id=opportunity_id,
@@ -287,7 +287,7 @@ class OpportunityRepository:
 
     def get_stats_today(self) -> dict[str, Any]:
         """Aggregate opportunity stats for the current UTC day."""
-        today_start = datetime.now(tz=UTC).replace(
+        today_start = datetime.now(tz=timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0,
         )
 

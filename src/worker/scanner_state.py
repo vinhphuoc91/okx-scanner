@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import redis as redis_lib
@@ -44,7 +44,7 @@ class ScannerState:
         """Refresh liveness timestamp."""
         client = self._client()
         try:
-            client.set(f"{_KEY_PREFIX}:heartbeat", datetime.now(tz=UTC).isoformat())
+            client.set(f"{_KEY_PREFIX}:heartbeat", datetime.now(tz=timezone.utc).isoformat())
         finally:
             client.close()
 
@@ -92,11 +92,11 @@ class ScannerState:
             heartbeat = _parse_iso(heartbeat_raw)
             uptime_seconds: float | None = None
             if started_at is not None:
-                uptime_seconds = (datetime.now(tz=UTC) - started_at).total_seconds()
+                uptime_seconds = (datetime.now(tz=timezone.utc) - started_at).total_seconds()
 
             stale = False
             if heartbeat is not None:
-                stale = (datetime.now(tz=UTC) - heartbeat).total_seconds() > _HEARTBEAT_STALE_SECONDS
+                stale = (datetime.now(tz=timezone.utc) - heartbeat).total_seconds() > _HEARTBEAT_STALE_SECONDS
             elif running:
                 stale = True
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from config.settings import Settings, get_settings
@@ -124,7 +124,7 @@ class LiquidationZoneStrategy(BaseStrategy):
                     "leverage_estimate": str(round(leverage_est, 4)),
                     "last_price": str(ticker.last_price),
                 },
-                detected_at=datetime.now(tz=UTC),
+                detected_at=datetime.now(tz=timezone.utc),
                 confidence=round(confidence, 4),
             )
             log.info(

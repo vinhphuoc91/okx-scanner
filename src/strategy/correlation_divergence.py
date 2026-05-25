@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from config.settings import Settings, get_settings
 from src.schemas.strategy import Candidate, Direction, StrategyType
@@ -111,7 +111,7 @@ class CorrelationDivergenceStrategy(BaseStrategy):
                     "btc_change_24h": str(round(benchmark.btc_change_24h, 4)),
                     "last_price": str(last_price) if last_price is not None else "",
                 },
-                detected_at=datetime.now(tz=UTC),
+                detected_at=datetime.now(tz=timezone.utc),
                 confidence=round(confidence, 4),
             )
             log.info(

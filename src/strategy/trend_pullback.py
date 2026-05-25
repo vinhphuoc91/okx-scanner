@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from config.settings import Settings, get_settings
@@ -105,7 +105,7 @@ class TrendPullbackStrategy(BaseStrategy):
                     "avg_volume_20": str(avg_vol.quantize(Decimal("0.0001"))),
                     "last_price": str(latest.close),
                 },
-                detected_at=datetime.now(tz=UTC),
+                detected_at=datetime.now(tz=timezone.utc),
                 confidence=round(confidence, 4),
             )
             log.info(

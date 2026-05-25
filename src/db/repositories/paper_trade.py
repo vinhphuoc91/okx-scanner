@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
@@ -124,7 +124,7 @@ class PaperTradeRepository:
         )
         if last_trade is not None:
             cooldown = timedelta(hours=float(strat_settings.cooldown_hours))
-            elapsed = datetime.now(tz=UTC) - last_trade.entry_at
+            elapsed = datetime.now(tz=timezone.utc) - last_trade.entry_at
             if elapsed < cooldown:
                 log.info(
                     "paper_trade.skip_cooldown",
@@ -186,7 +186,7 @@ class PaperTradeRepository:
         tp_pct = Decimal(str(cfg["tp_pct"]))
         sl_pct = Decimal(str(cfg["sl_pct"]))
         tp_price, sl_price = compute_tp_sl_prices(entry_price, direction, tp_pct, sl_pct)
-        now = entry_at or datetime.now(tz=UTC)
+        now = entry_at or datetime.now(tz=timezone.utc)
 
         row = PaperTrade(
             opportunity_id=opportunity_id,
@@ -264,7 +264,7 @@ class PaperTradeRepository:
             )
             stored_atr = atr_value
 
-        now = entry_at or datetime.now(tz=UTC)
+        now = entry_at or datetime.now(tz=timezone.utc)
 
         row = PaperTrade(
             opportunity_id=opportunity_id,
@@ -325,7 +325,7 @@ class PaperTradeRepository:
         resolved = (
             status if isinstance(status, PaperTradeStatus) else PaperTradeStatus(status)
         )
-        now = datetime.now(tz=UTC)
+        now = datetime.now(tz=timezone.utc)
         pnl = compute_pnl_pct(row.entry_price, close_price, row.direction)
 
         row.close_price = close_price

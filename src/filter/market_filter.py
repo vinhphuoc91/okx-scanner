@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from config.settings import Settings, get_settings
@@ -86,7 +86,7 @@ class MarketFilter:
         """
         self._settings = settings or get_settings()
         self._metadata = instrument_metadata or {}
-        self._reference_time = reference_time or datetime.now(tz=UTC)
+        self._reference_time = reference_time or datetime.now(tz=timezone.utc)
 
     @property
     def _quote_currencies(self) -> frozenset[str]:

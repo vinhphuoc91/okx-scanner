@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -186,7 +186,7 @@ class PendingConfirmationStore:
             tp_multiplier=tp_multiplier,
             timeout_hours=timeout_hours,
             confirmation_candles=confirmation_candles,
-            created_at=datetime.now(tz=UTC).isoformat(),
+            created_at=datetime.now(tz=timezone.utc).isoformat(),
         )
 
     def pending_to_dict(self, pending: PendingConfirmation) -> dict[str, Any]:

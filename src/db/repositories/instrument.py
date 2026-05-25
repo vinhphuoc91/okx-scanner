@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -53,7 +53,7 @@ class InstrumentRepository:
         instrument.tier = tier
         if scan_interval_seconds is not None:
             instrument.scan_interval_seconds = scan_interval_seconds
-        instrument.updated_at = datetime.now(tz=UTC)
+        instrument.updated_at = datetime.now(tz=timezone.utc)
 
         log.info(
             "instrument.tier.updated",
