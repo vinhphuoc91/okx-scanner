@@ -120,6 +120,23 @@ class MomentumStrategy(BaseStrategy):
                 )
                 return []
 
+            # Micro-cap filter: skip coins with 24h volume below threshold
+            min_vol = Decimal(str(self._settings.momentum_min_volume_24h_usd))
+            if min_vol > 0 and market_data.ticker is not None:
+                ticker = market_data.ticker
+                vol_24h = ticker.volume_24h_quote
+                if vol_24h is None and ticker.volume_24h_base is not None and ticker.last_price > Decimal("0"):
+                    vol_24h = ticker.volume_24h_base * ticker.last_price
+                if vol_24h is None or vol_24h < min_vol:
+                    log.debug(
+                        "strategy.momentum.skip",
+                        inst_id=inst_id,
+                        reason="micro_cap_volume_below_min",
+                        volume_24h_usd=str(vol_24h),
+                        min_volume_usd=str(min_vol),
+                    )
+                    return []
+
             m15 = _sort_candles(market_data.candles_m15)
             h1 = _sort_candles(market_data.candles_h1)
 

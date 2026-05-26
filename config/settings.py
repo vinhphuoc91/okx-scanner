@@ -193,6 +193,9 @@ class Settings(BaseSettings):
     momentum_volume_multiplier: Annotated[
         float, Field(alias="MOMENTUM_VOLUME_MULTIPLIER", ge=0)
     ] = 1.5
+    momentum_min_volume_24h_usd: Annotated[
+        float, Field(alias="MOMENTUM_MIN_VOLUME_24H_USD", ge=0)
+    ] = 5_000_000.0  # Filter micro-cap: only trade coins with 24h volume >= $5M
 
     # Breakout
     breakout_consolidation_candles: Annotated[
