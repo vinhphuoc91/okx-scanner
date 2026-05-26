@@ -6,6 +6,7 @@ import type { Opportunity } from '../../types/api'
 
 interface Props {
   title: string
+  description?: string
   icon: ReactNode
   loading: boolean
   error: string | null
@@ -20,6 +21,7 @@ interface Props {
 
 export function ScannerPageLayout({
   title,
+  description,
   icon,
   loading,
   error,
@@ -55,6 +57,12 @@ export function ScannerPageLayout({
           {t('common.refresh')}
         </button>
       </div>
+
+      {description && (
+        <p className="text-xs text-[#8b949e] leading-relaxed border-l-2 border-[#30363d] pl-3">
+          {description}
+        </p>
+      )}
 
       {error && (
         <div className="rounded-lg border border-[#f85149]/30 bg-[#f85149]/10 px-4 py-3 text-sm text-[#f85149]">

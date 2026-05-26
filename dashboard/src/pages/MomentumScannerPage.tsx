@@ -32,6 +32,7 @@ export function MomentumScannerPage() {
   return (
     <ScannerPageLayout
       title={t('scanner.momentum')}
+      description="H1 EMA 20/50 trend + M15 RSI + volume spike. Requires M15 confirmation (2/3 conditions). Filters coins with <$5M daily volume. / Xu hướng EMA H1 + RSI M15 + volume đột biến. Cần xác nhận M15 (2/3 điều kiện). Lọc coin volume 24h < $5M."
       icon={<Zap className="h-5 w-5 text-[#388bfd]" />}
       loading={loading}
       error={error}

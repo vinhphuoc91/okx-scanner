@@ -13,7 +13,7 @@ export function VolumeAnomalyPage() {
     : 0
 
   return (
-    <ScannerPageLayout title={t('scanner.volumeAnomaly')} icon={<Activity className="h-5 w-5 text-[#388bfd]" />}
+    <ScannerPageLayout title={t('scanner.volumeAnomaly')} description="Volume spike 2.5× average with muted price move (<3%) — signals hidden accumulation or distribution. No M15 confirmation. / Volume đột biến 2.5× trong khi giá ít biến động (<3%) — tích lũy hoặc phân phối ngầm. Không cần xác nhận M15." icon={<Activity className="h-5 w-5 text-[#388bfd]" />}
       loading={loading} error={error} onRefresh={refresh} items={items}
       header={
         <div className="grid grid-cols-2 gap-3">

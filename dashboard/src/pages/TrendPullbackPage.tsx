@@ -10,7 +10,7 @@ export function TrendPullbackPage() {
   const { items, loading, error, refresh } = useStrategyOpportunities('TREND_PULLBACK')
 
   return (
-    <ScannerPageLayout title={t('scanner.trendPullback')} icon={<TrendingUp className="h-5 w-5 text-[#3fb950]" />}
+    <ScannerPageLayout title={t('scanner.trendPullback')} description="Pullback entry within established H1 trend (EMA 20/50). Requires M15 confirmation. / Vào lệnh theo pullback trong xu hướng H1 (EMA 20/50). Cần xác nhận M15." icon={<TrendingUp className="h-5 w-5 text-[#3fb950]" />}
       loading={loading} error={error} onRefresh={refresh} items={items}
       header={
         <div className="rounded-xl border border-[#30363d] bg-[#161b22] p-4">

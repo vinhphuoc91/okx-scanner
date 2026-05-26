@@ -6,6 +6,11 @@ import { useTranslation } from '../i18n/I18nProvider'
 import { directionColor, scoreCircleColor } from '../utils/colors'
 import { contextFunding, contextPrice, formatNumber, pairLabel } from '../utils/format'
 
+function ctxNum(value: unknown): number | undefined {
+  const n = parseFloat(String(value ?? ''))
+  return Number.isNaN(n) ? undefined : n
+}
+
 export function StatArbitragePage() {
   const { t } = useTranslation()
   const { items, loading, error, refresh } = useStrategyOpportunities('STAT_ARBITRAGE')
@@ -21,6 +26,7 @@ export function StatArbitragePage() {
   return (
     <ScannerPageLayout
       title={t('scanner.statArbitrage')}
+      description="Trades spot vs perp price gap (basis). Expects convergence when basis is too wide. / Giao dịch chênh lệch spot vs perp. Kỳ vọng hội tụ khi basis quá rộng."
       icon={<ArrowLeftRight className="h-5 w-5 text-[#e3b341]" />}
       loading={loading}
       error={error}
@@ -63,8 +69,8 @@ export function StatArbitragePage() {
                 <td className="px-3 py-2 font-mono font-semibold">{pairLabel(item.symbol)}</td>
                 <td className="px-3 py-2 font-mono text-xs">{contextPrice({ last_price: item.context?.spot_price })}</td>
                 <td className="px-3 py-2 font-mono text-xs">{contextPrice({ last_price: item.context?.perp_price })}</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#e3b341]">{formatNumber(item.context?.basis_pct, 3)}%</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.basis_trend, 3)}</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#e3b341]">{formatNumber(ctxNum(item.context?.basis_pct), 3)}%</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.basis_trend), 3)}</td>
                 <td className="px-3 py-2 font-mono text-xs">{contextFunding(item.context)}</td>
                 <td className="px-3 py-2 font-mono text-xs" style={{ color: directionColor(item.direction) }}>{item.direction}</td>
                 <td className="px-3 py-2 font-mono font-bold" style={{ color: scoreCircleColor(item.total_score) }}>{item.total_score}</td>

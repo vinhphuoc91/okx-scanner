@@ -6,6 +6,11 @@ import { useTranslation } from '../i18n/I18nProvider'
 import { directionColor, scoreCircleColor } from '../utils/colors'
 import { formatNumber, pairLabel } from '../utils/format'
 
+function ctxNum(value: unknown): number | undefined {
+  const n = parseFloat(String(value ?? ''))
+  return Number.isNaN(n) ? undefined : n
+}
+
 export function CorrelationDivergencePage() {
   const { t } = useTranslation()
   const { items, loading, error, refresh } = useStrategyOpportunities('CORRELATION_DIVERGENCE')
@@ -15,12 +20,13 @@ export function CorrelationDivergencePage() {
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
   }, [items])
 
-  const btcChange = items[0]?.context?.btc_change_1h
-  const ethChange = items[0]?.context?.eth_change_1h
+  const btcChange = ctxNum(items[0]?.context?.btc_change_1h)
+  const ethChange = ctxNum(items[0]?.context?.eth_change_1h)
 
   return (
     <ScannerPageLayout
       title={t('scanner.correlationDivergence')}
+      description="Coins diverging from BTC/ETH benchmark — expects catch-up move. Tier 2+ only. / Coin phân kỳ so với BTC/ETH — kỳ vọng bắt kịp. Chỉ scan Tier 2+."
       icon={<GitCompare className="h-5 w-5 text-[#79c0ff]" />}
       loading={loading}
       error={error}
@@ -60,9 +66,9 @@ export function CorrelationDivergencePage() {
             {items.map((item) => (
               <ClickableRow key={item.id} opp={item}>
                 <td className="px-3 py-2 font-mono font-semibold">{pairLabel(item.symbol)}</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.btc_change_1h, 2)}%</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.coin_change_1h, 2)}%</td>
-                <td className="px-3 py-2 font-mono text-xs text-[#79c0ff]">{formatNumber(item.context?.divergence_pct, 2)}%</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.btc_change_1h), 2)}%</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.coin_change_1h), 2)}%</td>
+                <td className="px-3 py-2 font-mono text-xs text-[#79c0ff]">{formatNumber(ctxNum(item.context?.divergence_pct), 2)}%</td>
                 <td className="px-3 py-2 font-mono text-xs" style={{ color: directionColor(item.direction) }}>{item.direction}</td>
                 <td className="px-3 py-2 font-mono font-bold" style={{ color: scoreCircleColor(item.total_score) }}>{item.total_score}</td>
                 <td className="px-3 py-2 font-mono text-xs text-[#8b949e]">{item.tier ?? '—'}</td>

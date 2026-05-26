@@ -6,6 +6,11 @@ import { useTranslation } from '../i18n/I18nProvider'
 import { directionColor, scoreCircleColor } from '../utils/colors'
 import { contextFunding, formatNumber, pairLabel } from '../utils/format'
 
+function ctxNum(value: unknown): number | undefined {
+  const n = parseFloat(String(value ?? ''))
+  return Number.isNaN(n) ? undefined : n
+}
+
 export function LiquidationZonePage() {
   const { t } = useTranslation()
   const { items, loading, error, refresh } = useStrategyOpportunities('LIQUIDATION_ZONE')
@@ -23,6 +28,7 @@ export function LiquidationZonePage() {
   return (
     <ScannerPageLayout
       title={t('scanner.liquidationZone')}
+      description="Fades over-leveraged markets: extreme funding + OI change ≥8% in 4H + RSI exhaustion. Requires M15 confirmation. / Vào ngược thị trường quá đòn bẩy: funding extreme + OI thay đổi ≥8%/4H + RSI kiệt sức. Cần xác nhận M15."
       icon={<AlertTriangle className="h-5 w-5 text-[#f85149]" />}
       loading={loading}
       error={error}
@@ -61,10 +67,10 @@ export function LiquidationZonePage() {
             {items.map((item) => (
               <ClickableRow key={item.id} opp={item}>
                 <td className="px-3 py-2 font-mono font-semibold">{pairLabel(item.symbol)}</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.oi_change_4h, 1)}%</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.oi_change_4h), 1)}%</td>
                 <td className="px-3 py-2 font-mono text-xs">{contextFunding(item.context)}</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.rsi, 1)}</td>
-                <td className="px-3 py-2 font-mono text-xs">{formatNumber(item.context?.bb_position, 2)}</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.rsi), 1)}</td>
+                <td className="px-3 py-2 font-mono text-xs">{formatNumber(ctxNum(item.context?.bb_position), 2)}</td>
                 <td className="px-3 py-2 font-mono text-xs" style={{ color: directionColor(item.direction) }}>{item.direction}</td>
                 <td className="px-3 py-2 font-mono font-bold" style={{ color: scoreCircleColor(item.total_score) }}>{item.total_score}</td>
               </ClickableRow>

@@ -42,6 +42,7 @@ export function FundingScannerPage() {
   return (
     <ScannerPageLayout
       title={t('scanner.funding')}
+      description="Detects extreme funding rates → extreme positive = SHORT, extreme negative = LONG. No M15 confirmation. / Phát hiện funding rate bất thường. Funding dương cao → SHORT; âm cao → LONG. Không cần xác nhận M15."
       icon={<Flame className="h-5 w-5 text-[#f85149]" />}
       loading={loading}
       error={error}

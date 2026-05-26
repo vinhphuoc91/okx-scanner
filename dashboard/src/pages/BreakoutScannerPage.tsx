@@ -13,7 +13,7 @@ export function BreakoutScannerPage() {
     : 0
 
   return (
-    <ScannerPageLayout title={t('scanner.breakout')} icon={<Radio className="h-5 w-5 text-[#d29922]" />}
+    <ScannerPageLayout title={t('scanner.breakout')} description="Price breaking out of H1 consolidation range with 2× volume. Requires M15 confirmation. / Giá phá vỡ vùng tích lũy H1 kèm volume gấp 2×. Cần xác nhận M15." icon={<Radio className="h-5 w-5 text-[#d29922]" />}
       loading={loading} error={error} onRefresh={refresh} items={items}
       header={
         <div className="grid grid-cols-2 gap-3">
