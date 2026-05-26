@@ -5,7 +5,9 @@ from __future__ import annotations
 import signal
 import threading
 import time
-from datetime import UTC, datetime
+from datetime import datetime
+
+from src.utils.compat import UTC
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 

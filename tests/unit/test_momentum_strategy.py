@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
 
 from config.settings import Settings
-from src.schemas.market import NormalizedCandle
+from src.schemas.market import NormalizedCandle, NormalizedTicker
 from src.schemas.strategy import Direction, StrategyType
 from src.strategy.base import MarketContext
 from src.strategy.momentum import MomentumStrategy, calc_ema, calc_rsi
@@ -35,7 +35,7 @@ def _candle(
     close: str,
     volume: str = "1000",
 ) -> NormalizedCandle:
-    t = datetime(2026, 1, 1, tzinfo=UTC) + timedelta(hours=idx)
+    t = datetime(2026, 1, 1, tzinfo=timezone.utc) + timedelta(hours=idx)
     price = Decimal(close)
     return NormalizedCandle(
         inst_id=inst_id,
@@ -121,6 +121,40 @@ class TestMomentumStrategy:
         strategy = MomentumStrategy(settings=_settings())
         results = strategy.scan(self._build_uptrend_context(volume="1100"))
         assert results == []
+
+    def test_skip_micro_cap_low_24h_volume(self) -> None:
+        strategy = MomentumStrategy(settings=_settings(momentum_min_volume_24h_usd=5_000_000.0))
+        ticker = NormalizedTicker(
+            inst_id="BTC-USDT-SWAP",
+            last_price=Decimal("100"),
+            volume_24h_quote=Decimal("1000000"),
+        )
+        ctx = self._build_uptrend_context(volume="5000")
+        ctx = MarketContext(
+            symbol=ctx.symbol,
+            ticker=ticker,
+            candles_m15=ctx.candles_m15,
+            candles_h1=ctx.candles_h1,
+        )
+        assert strategy.scan(ctx) == []
+
+    def test_passes_micro_cap_with_sufficient_24h_volume(self) -> None:
+        strategy = MomentumStrategy(settings=_settings(momentum_min_volume_24h_usd=5_000_000.0))
+        ticker = NormalizedTicker(
+            inst_id="BTC-USDT-SWAP",
+            last_price=Decimal("100"),
+            volume_24h_quote=Decimal("10000000"),
+        )
+        ctx = self._build_uptrend_context(volume="5000")
+        ctx = MarketContext(
+            symbol=ctx.symbol,
+            ticker=ticker,
+            candles_m15=ctx.candles_m15,
+            candles_h1=ctx.candles_h1,
+        )
+        results = strategy.scan(ctx)
+        assert len(results) == 1
+        assert results[0].direction == Direction.LONG
 
     def test_no_signal_mixed_trend_and_rsi(self) -> None:
         h1 = [

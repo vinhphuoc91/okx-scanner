@@ -53,7 +53,7 @@ class TestStrategySettingsRepository:
     def test_get_all_settings(self, session: Session) -> None:
         repo = StrategySettingsRepository(session)
         all_settings = repo.get_all_settings()
-        assert len(all_settings) == 5
+        assert len(all_settings) == len(DEFAULT_STRATEGY_SETTINGS)
         assert all_settings["FUNDING"].min_score == 70
 
     def test_update_settings(self, session: Session) -> None:

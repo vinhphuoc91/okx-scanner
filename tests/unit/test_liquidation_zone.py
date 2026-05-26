@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
+
+from src.utils.compat import UTC
 from decimal import Decimal
 
 import pytest

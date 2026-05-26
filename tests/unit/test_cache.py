@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
+
+from src.utils.compat import UTC
 from decimal import Decimal
 
 import fakeredis

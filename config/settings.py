@@ -13,7 +13,7 @@ Environment variables are loaded with the following precedence:
 from __future__ import annotations
 
 import os
-from enum import StrEnum
+from src.utils.compat import StrEnum
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
