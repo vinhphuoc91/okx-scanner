@@ -690,7 +690,12 @@ class PaperTradeTracker:
                 return PaperTradeStatus.LOSS
 
         if now >= timeout_at:
-            return PaperTradeStatus.EXPIRED
+            entry = Decimal(str(trade.entry_price))
+            if is_long:
+                pnl = current_price - entry
+            else:
+                pnl = entry - current_price
+            return PaperTradeStatus.WIN if pnl > Decimal("0") else PaperTradeStatus.LOSS
 
         return None
 
