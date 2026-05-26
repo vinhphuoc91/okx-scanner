@@ -13,6 +13,7 @@ import { LiquidationZonePage } from './pages/LiquidationZonePage'
 import { StatArbitragePage } from './pages/StatArbitragePage'
 import { MarketOverviewPage } from './pages/MarketOverviewPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { TradingPage } from './pages/TradingPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="stat-arbitrage" element={<StatArbitragePage />} />
             <Route path="market" element={<MarketOverviewPage />} />
             <Route path="alerts" element={<AlertsPage />} />
+            <Route path="trading" element={<TradingPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route
               path="logs"

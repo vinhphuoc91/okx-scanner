@@ -127,7 +127,7 @@ def create_app() -> FastAPI:
     application.include_router(status.router)
     application.include_router(alerts.router)
     application.include_router(strategy_settings.router)
-    application.include_router(trading_config.router, prefix="/api")
+    application.include_router(trading_config.router)
 
     @application.get("/", include_in_schema=False)
     async def _root() -> dict[str, str]:

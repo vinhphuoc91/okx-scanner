@@ -76,7 +76,7 @@ const NAV_SECTIONS: NavSection[] = [
 ]
 
 const COMING_SOON_ITEMS: NavItem[] = [
-  { labelKey: 'nav.pairTrading', path: '#', icon: <ArrowLeftRight className="h-4 w-4" />, disabled: true },
+  { labelKey: 'nav.parTrading', path: '/trading', icon: <Zap className="h-4 w-4" />, disabled: false },
   { labelKey: 'nav.positions', path: '#', icon: <Wallet className="h-4 w-4" />, disabled: true },
   { labelKey: 'nav.orders', path: '#', icon: <ListOrdered className="h-4 w-4" />, disabled: true },
   { labelKey: 'nav.tradeHistory', path: '#', icon: <LineChart className="h-4 w-4" />, disabled: true },

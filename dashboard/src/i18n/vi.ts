@@ -49,6 +49,7 @@ const vi: TranslationDict = {
   'nav.settings': 'Cài đặt',
   'nav.logs': 'Nhật ký',
   'nav.pairTrading': 'Pair Trading',
+  'nav.parTrading': 'Giao dịch',
   'nav.positions': 'Vị thế',
   'nav.orders': 'Lệnh',
   'nav.tradeHistory': 'Lịch sử giao dịch',

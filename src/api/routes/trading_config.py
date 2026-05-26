@@ -50,3 +50,64 @@ def test_connection(session: Session = Depends(get_db)):
     client = OKXTradingClient(cfg.api_key, cfg.api_secret, cfg.api_passphrase)
     ok = client.test_connection()
     return {"success": ok, "message": "Connected successfully" if ok else "Connection failed"}
+
+
+@router.get("/balance")
+def get_balance(session: Session = Depends(get_db)):
+    cfg = TradingConfigRepository(session).get()
+    if not cfg.api_key:
+        raise HTTPException(status_code=400, detail="API credentials not configured")
+    client = OKXTradingClient(cfg.api_key, cfg.api_secret, cfg.api_passphrase)
+    bal = client.get_balance()
+    return {"available": float(bal["available"]), "total": float(bal["total"])}
+
+
+@router.get("/daily-risk")
+def get_daily_risk(session: Session = Depends(get_db)):
+    from datetime import datetime, timezone
+
+    from src.db.models import PaperTrade, PaperTradeStatus
+    from src.risk.real_trade_risk import RealTradeRiskGate
+
+    gate = RealTradeRiskGate(session)
+    cfg = gate.get_config()
+    today = datetime.now(tz=timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    losses = session.query(PaperTrade).filter(
+        PaperTrade.mode == "real",
+        PaperTrade.closed_at >= today,
+        PaperTrade.status == PaperTradeStatus.LOSS,
+    ).all()
+    loss_pct = sum(abs(float(t.pnl_pct)) for t in losses if t.pnl_pct)
+    limit = cfg.daily_loss_limit_pct
+    return {
+        "daily_loss_pct": round(loss_pct, 2),
+        "daily_loss_limit_pct": limit,
+        "remaining_pct": round(max(0, limit - loss_pct), 2),
+        "is_blocked": loss_pct >= limit,
+    }
+
+
+@router.get("/strategy-toggles")
+def get_strategy_toggles(session: Session = Depends(get_db)):
+    from src.db.repositories.strategy_settings import StrategySettingsRepository
+
+    settings = StrategySettingsRepository(session).get_all_settings()
+    return [{"strategy_type": k, "real_trading_enabled": v.real_trading_enabled} for k, v in settings.items()]
+
+
+class StrategyToggleUpdate(BaseModel):
+    real_trading_enabled: bool = False
+
+
+@router.put("/strategy-toggles/{strategy}")
+def update_strategy_toggle(
+    strategy: str,
+    body: StrategyToggleUpdate,
+    session: Session = Depends(get_db),
+):
+    from src.db.repositories.strategy_settings import StrategySettingsRepository
+
+    repo = StrategySettingsRepository(session)
+    repo.update_settings(strategy, real_trading_enabled=body.real_trading_enabled)
+    session.commit()
+    return {"ok": True}

@@ -49,6 +49,7 @@ const en: TranslationDict = {
   'nav.settings': 'Settings',
   'nav.logs': 'Logs',
   'nav.pairTrading': 'Pair Trading',
+  'nav.parTrading': 'Trading',
   'nav.positions': 'Positions',
   'nav.orders': 'Orders',
   'nav.tradeHistory': 'Trade History',
