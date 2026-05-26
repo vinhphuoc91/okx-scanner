@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import { useState } from 'react'
 import type { Opportunity } from '../types/api'
 import {
   directionColor,
@@ -23,7 +24,12 @@ const SCORE_BARS: { key: keyof Opportunity['scores']; label: string; max: number
   { key: 'spread', label: 'Spread', max: 20 },
 ]
 
+function toTVSymbol(symbol: string): string {
+  return 'OKX:' + symbol.replace(/-SWAP$/, '').replace(/-/g, '') + '.P'
+}
+
 export function ScoreBreakdownModal({ opportunity, onClose }: Props) {
+  const [tab, setTab] = useState<'score' | 'chart'>('score')
   const grade = gradeLabel(opportunity.grade, opportunity.total_score)
   const gradeClr = gradeColor(opportunity.grade, opportunity.total_score)
   const scoreClr = scoreCircleColor(opportunity.total_score)
@@ -36,25 +42,40 @@ export function ScoreBreakdownModal({ opportunity, onClose }: Props) {
       role="presentation"
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#30363d] bg-[#161b22] shadow-2xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[#30363d] bg-[#161b22] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
-        <div className="sticky top-0 flex items-center justify-between border-b border-[#30363d] bg-[#161b22] px-5 py-4">
-          <div>
-            <h2 className="font-mono text-lg font-bold text-[#e6edf3]">
-              {pairLabel(opportunity.symbol)}
-            </h2>
-            <p className="text-xs text-[#8b949e]">
-              {opportunity.strategy} · {formatRelativeTime(opportunity.detected_at)}
-            </p>
+        <div className="sticky top-0 border-b border-[#30363d] bg-[#161b22]">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div>
+              <h2 className="font-mono text-lg font-bold text-[#e6edf3]">
+                {pairLabel(opportunity.symbol)}
+              </h2>
+              <p className="text-xs text-[#8b949e]">
+                {opportunity.strategy} · {formatRelativeTime(opportunity.detected_at)}
+              </p>
+            </div>
+            <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[#8b949e] hover:bg-[#21262d]">
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[#8b949e] hover:bg-[#21262d]">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex gap-1 px-5 pb-3">
+            {(['score', 'chart'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTab(t)}
+                className={`rounded px-3 py-1 text-xs font-medium ${tab === t ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#e6edf3]'}`}
+              >
+                {t === 'score' ? '📊 Score' : '📈 Chart'}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {tab === 'score' && (
         <div className="space-y-5 p-5">
           <div className="flex items-center gap-4">
             <div
@@ -133,6 +154,22 @@ export function ScoreBreakdownModal({ opportunity, onClose }: Props) {
             Risk decision: APPROVED
           </div>
         </div>
+        )}
+
+        {tab === 'chart' && (
+          <div className="p-4">
+            <iframe
+              key={opportunity.symbol}
+              src={`https://www.tradingview.com/widgetembed/?symbol=${toTVSymbol(opportunity.symbol)}&interval=15&theme=dark&style=1&locale=en&hide_side_toolbar=0&allow_symbol_change=0`}
+              className="w-full rounded-lg border border-[#30363d]"
+              style={{ height: '450px' }}
+              title="TradingView Chart"
+            />
+            <p className="mt-2 text-center text-[10px] text-[#8b949e]">
+              M15 chart · {toTVSymbol(opportunity.symbol)}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
