@@ -111,7 +111,7 @@ def configure_logging(
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(
-            logging.getLevelNamesMapping()[resolved_level]
+            logging._nameToLevel[resolved_level]
         ),
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
