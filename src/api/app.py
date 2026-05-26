@@ -21,7 +21,7 @@ from fastapi.responses import ORJSONResponse
 
 from config import settings
 from src import __version__
-from src.api.routes import health, opportunities, status, alerts, strategy_settings
+from src.api.routes import health, opportunities, status, alerts, strategy_settings, trading_config
 from src.db.session import dispose_engine, get_engine
 from src.utils.logger import configure_logging, get_logger
 
@@ -127,6 +127,7 @@ def create_app() -> FastAPI:
     application.include_router(status.router)
     application.include_router(alerts.router)
     application.include_router(strategy_settings.router)
+    application.include_router(trading_config.router, prefix="/api")
 
     @application.get("/", include_in_schema=False)
     async def _root() -> dict[str, str]:
