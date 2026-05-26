@@ -285,7 +285,13 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
             <tbody>
               {sortedItems.map((trade, idx) => {
                 const isRunning = trade.status === 'RUNNING' || trade.status === 'PENDING'
-                const pnl = isRunning ? null : formatPctColored(trade.pnl_pct)
+                const hasLivePnl =
+                  trade.status === 'RUNNING' && trade.live_pnl_pct != null
+                const pnl = hasLivePnl
+                  ? formatPctColored(trade.live_pnl_pct)
+                  : isRunning
+                    ? null
+                    : formatPctColored(trade.pnl_pct)
                 const duration =
                   trade.duration_seconds ??
                   (isRunning
@@ -329,7 +335,14 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
                       <SlTpCell price={trade.tp_price} pct={trade.tp_pct} variant="tp" />
                     </td>
                     <td className="px-2.5 py-2 font-mono text-xs font-bold">
-                      {isRunning ? (
+                      {hasLivePnl ? (
+                        <span className="inline-flex items-center gap-1">
+                          <span style={{ color: pnl!.color }}>{pnl!.text}</span>
+                          <span className="rounded bg-[#388bfd]/20 px-1 py-px text-[9px] font-bold uppercase text-[#388bfd]">
+                            live
+                          </span>
+                        </span>
+                      ) : isRunning ? (
                         <span className="text-[#484f58]">—</span>
                       ) : (
                         <span style={{ color: pnl!.color }}>{pnl!.text}</span>

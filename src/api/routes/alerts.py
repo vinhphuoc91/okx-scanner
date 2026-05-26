@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from src.db.repositories.paper_trade import PaperTradeRepository
+from src.db.repositories.paper_trade import PaperTradeRepository, compute_pnl_pct
 from src.db.session import get_db
 from src.worker.pending_confirmations import PendingConfirmationStore
+from src.worker.scanner_loop import get_ticker_cache
 
 router = APIRouter(tags=["alerts"])
 _pending_store = PendingConfirmationStore()
@@ -20,6 +22,29 @@ def _parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _inject_live_pnl(items: list[dict[str, Any]]) -> None:
+    """Attach live_pnl_pct to RUNNING trades using the scanner ticker cache."""
+    try:
+        cache = get_ticker_cache()
+        if not cache:
+            return
+        for item in items:
+            if item.get("status") != "RUNNING":
+                continue
+            ticker = cache.get(item.get("symbol"))
+            if ticker is None:
+                continue
+            entry = Decimal(str(item["entry_price"]))
+            current = ticker.last_price
+            if entry <= 0 or current <= 0:
+                continue
+            item["live_pnl_pct"] = float(
+                compute_pnl_pct(entry, current, item.get("direction", "LONG")),
+            )
+    except Exception:
+        return
 
 
 @router.get("/alerts")
@@ -44,6 +69,7 @@ def list_alerts(
         date_from=_parse_datetime(date_from),
         date_to=_parse_datetime(date_to),
     )
+    _inject_live_pnl(items)
     return {"count": len(items), "items": items}
 
 

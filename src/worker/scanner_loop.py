@@ -46,6 +46,14 @@ from src.worker.trade_tracker import PaperTradeTracker
 
 log = get_logger(__name__)
 
+_ticker_cache: dict = {}
+
+
+def get_ticker_cache() -> dict:
+    """Return the latest ticker snapshot populated by the scanner loop."""
+    return _ticker_cache
+
+
 _IDLE_SLEEP_SECONDS = 1.0
 
 
@@ -165,6 +173,7 @@ class ScannerLoop:
 
             inst_ids = {inst.inst_id for inst in instruments}
             ticker_map = self._fetch_ticker_map(inst_ids)
+            _ticker_cache.update(ticker_map)
             market_filter = MarketFilter(settings=self._settings)
             tier_tickers = [ticker_map[i] for i in inst_ids if i in ticker_map]
             filter_result = market_filter.filter_instruments(tier_tickers)

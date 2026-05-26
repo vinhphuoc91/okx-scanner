@@ -54,6 +54,7 @@ export interface PaperTrade {
   closed_at: string | null
   close_price: string | null
   pnl_pct: number | null
+  live_pnl_pct?: number | null
   tier: number
   duration_seconds: number | null
   atr_value: number | null
