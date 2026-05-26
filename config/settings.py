@@ -214,10 +214,10 @@ class Settings(BaseSettings):
     # Volume anomaly
     volume_anomaly_multiplier: Annotated[
         float, Field(alias="VOLUME_ANOMALY_MULTIPLIER", ge=0)
-    ] = 4.0
+    ] = 2.5  # Giảm từ 4.0 → dễ trigger hơn
     volume_anomaly_max_price_change: Annotated[
         float, Field(alias="VOLUME_ANOMALY_MAX_PRICE_CHANGE", ge=0)
-    ] = 1.5
+    ] = 3.0  # Tăng từ 1.5% → cho phép price move nhiều hơn
 
     # Trend pullback
     trend_pullback_ema_fast: Annotated[
@@ -244,7 +244,7 @@ class Settings(BaseSettings):
     correlation_min_tier: Annotated[int, Field(alias="CORRELATION_MIN_TIER", ge=1, le=3)] = 2
 
     # Liquidation zone
-    liq_min_oi_change: Annotated[float, Field(alias="LIQ_MIN_OI_CHANGE", ge=0)] = 20.0
+    liq_min_oi_change: Annotated[float, Field(alias="LIQ_MIN_OI_CHANGE", ge=0)] = 8.0  # Giảm từ 20% → dễ trigger hơn
     liq_funding_extreme_high: Annotated[
         float, Field(alias="LIQ_FUNDING_EXTREME_HIGH")
     ] = 0.0005
