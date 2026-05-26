@@ -21,7 +21,7 @@ _INDEX_KEY = "pending_confirm:index"
 MAX_PENDING = 20
 
 
-_MAX_CONFIRM_SECONDS = 15 * 60
+_MAX_CONFIRM_SECONDS = 30 * 60
 
 
 @dataclass

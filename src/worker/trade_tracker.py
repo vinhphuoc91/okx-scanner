@@ -482,7 +482,9 @@ class PaperTradeTracker:
         elapsed = now - created
         max_wait = timedelta(minutes=max(MIN_CONFIRM_MINUTES, 15 * pending.confirmation_candles))
 
-        if len(candles_m15) < 21:
+        # Giảm yêu cầu candles từ 21 xuống 14
+        MIN_CANDLES = 14
+        if len(candles_m15) < MIN_CANDLES:
             if elapsed > max_wait:
                 elapsed_min = round(elapsed.total_seconds() / 60, 1)
                 return "failed", f"timeout_insufficient_candles_{elapsed_min}m"
@@ -492,30 +494,30 @@ class PaperTradeTracker:
         latest = sorted_m15[-1]
         closes = _closes(sorted_m15)
         rsi = calc_rsi(closes, 14)
-        if rsi is None:
-            if elapsed > max_wait:
-                elapsed_min = round(elapsed.total_seconds() / 60, 1)
-                return "failed", f"timeout_no_rsi_{elapsed_min}m"
-            return "wait", None
-
-        avg_vol = sum(c.volume for c in sorted_m15[-21:-1]) / Decimal("20")
-        vol_ok = avg_vol > 0 and latest.volume >= avg_vol
         signal = Decimal(pending.signal_price)
         is_long = pending.direction.upper() == "LONG"
-
+        # Đánh giá từng điều kiện độc lập — nới lỏng ngưỡng
         if is_long:
-            price_ok = latest.close > signal
-            rsi_ok = rsi > Decimal("50")
+            price_ok = latest.close > signal * Decimal("0.995")  # nới 0.5%
+            rsi_ok = rsi is not None and rsi > Decimal("45")      # nới từ 50 xuống 45
         else:
-            price_ok = latest.close < signal
-            rsi_ok = rsi < Decimal("50")
-
-        if price_ok and rsi_ok and vol_ok:
+            price_ok = latest.close < signal * Decimal("1.005")
+            rsi_ok = rsi is not None and rsi < Decimal("55")
+        # Volume: chỉ cần >= 70% avg (thay vì 100%)
+        lookback = sorted_m15[-14:-1]
+        if lookback:
+            avg_vol = sum(c.volume for c in lookback) / Decimal(str(len(lookback)))
+            vol_ok = avg_vol > 0 and latest.volume >= avg_vol * Decimal("0.7")
+        else:
+            vol_ok = True
+        # Confirm nếu đủ 2/3 điều kiện (thay vì 3/3)
+        conditions_met = sum([price_ok, rsi_ok, vol_ok])
+        if conditions_met >= 2:
             return "confirmed", None
-
         if elapsed > max_wait:
             elapsed_min = round(elapsed.total_seconds() / 60, 1)
-            return "failed", f"timeout_criteria_not_met_{elapsed_min}m"
+            fail_detail = f"price={price_ok},rsi={rsi_ok},vol={vol_ok}"
+            return "failed", f"timeout_criteria_not_met_{elapsed_min}m_{fail_detail}"
         return "wait", None
 
     def check_running_trades(
