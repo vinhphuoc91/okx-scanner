@@ -80,9 +80,14 @@ Strategies **có** confirmation: MOMENTUM, BREAKOUT, TREND_PULLBACK, LIQUIDATION
 Strategies **không** cần: FUNDING, VOLUME_ANOMALY, CORRELATION_DIVERGENCE, STAT_ARBITRAGE
 
 ## Các vấn đề đã biết / đang theo dõi
-- Confirm Failed rate cao (đang fix) — nguyên nhân: điều kiện quá khắt khe, timeout ngắn
-- Win rate thấp — cần thêm data để đánh giá
+- Confirm Failed rate cao — **đã fix**: nới lỏng điều kiện M15 (2/3 thay vì 3/3), timeout 30 phút, 14 candles
+- Win rate thấp — cần thêm data để đánh giá (sample size còn nhỏ)
 - Dependencies trên VPS: cài qua `pip install -e ".[dev]"` trong tmux để tránh disconnect
+
+## Momentum Strategy — cấu hình đặc biệt
+- Micro-cap filter: bỏ qua coin có volume 24h < $5M → env var `MOMENTUM_MIN_VOLUME_24H_USD=5000000`
+- Lý do: coin micro-cap (ACU, BASED...) rất volatile, dễ trigger SL ngay sau khi vào lệnh
+- Điều chỉnh ngưỡng trong `.env` nếu cần (mặc định 5M)
 
 ## Khi debug vấn đề confirm
 1. Check log: `docker compose logs worker --tail=100 | grep confirm`
