@@ -13,7 +13,7 @@ Six tables modelling the full opportunity lifecycle:
 from __future__ import annotations
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import (
@@ -561,6 +561,7 @@ class StrategySettings(Base):
     timeout_tier2: Mapped[int] = mapped_column(Integer, nullable=False)
     timeout_tier3: Mapped[int] = mapped_column(Integer, nullable=False)
     requires_confirmation: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    real_trading_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     confirmation_candles: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     atr_sl_multiplier_t1: Mapped[Decimal] = mapped_column(Numeric(4, 2), nullable=False)
     atr_sl_multiplier_t2: Mapped[Decimal] = mapped_column(Numeric(4, 2), nullable=False)
@@ -644,4 +645,28 @@ class SystemConfig(Base):
             "alert_min_score >= 50 AND alert_min_score <= 95",
             name="ck_system_config_alert_min_score",
         ),
+    )
+
+
+class TradingMode(str, enum.Enum):
+    PAPER = "paper"
+    REAL = "real"
+
+
+class TradingConfig(Base):
+    __tablename__ = "trading_config"
+
+    id: Mapped[int] = mapped_column(primary_key=True, default=1)
+    mode: Mapped[str] = mapped_column(String(10), default=TradingMode.PAPER.value)
+    api_key: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    api_secret: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    api_passphrase: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    # Risk controls
+    daily_loss_limit_pct: Mapped[float] = mapped_column(default=5.0)   # stop if daily loss > X%
+    size_pct_tier1: Mapped[float] = mapped_column(default=3.0)          # % balance per trade T1
+    size_pct_tier2: Mapped[float] = mapped_column(default=2.0)          # % balance per trade T2
+    size_pct_tier3: Mapped[float] = mapped_column(default=1.0)          # % balance per trade T3
+    max_leverage: Mapped[int] = mapped_column(default=5)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

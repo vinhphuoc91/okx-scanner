@@ -142,7 +142,7 @@ def upgrade() -> None:
             {"st": row["strategy_type"]},
         ).fetchone()
         if exists is None:
-            op.execute(strategy_settings.insert().values(**row))
+            op.bulk_insert(strategy_settings, [row])
 
 
 def downgrade() -> None:
