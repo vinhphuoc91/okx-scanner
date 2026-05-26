@@ -514,6 +514,7 @@ class PaperTrade(Base):
     signal_price: Mapped[Decimal | None] = mapped_column(Numeric(24, 8))
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     confirmation_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    mode: Mapped[str] = mapped_column(String(10), default="paper")  # "paper" | "real"
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

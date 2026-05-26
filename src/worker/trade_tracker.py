@@ -10,10 +10,13 @@ from sqlalchemy.orm import Session
 
 from src.collector.rest_client import OKXRestClient
 from src.collector.normalizer import normalize_ticker
+from src.collector.trading_client import OKXTradingClient
 from src.db.models import Opportunity, OpportunitySide, OpportunityStatus, PaperTradeStatus
 from src.db.repositories.opportunity import OpportunityRepository
 from src.db.repositories.paper_trade import PaperTradeRepository
 from src.db.repositories.strategy_settings import StrategySettingsRepository
+from src.db.repositories.trading_config import TradingConfigRepository
+from src.risk.real_trade_risk import RealTradeRiskGate
 from src.schemas.market import NormalizedCandle, NormalizedTicker
 from src.strategy.indicators import calc_atr
 from src.strategy.momentum import _closes, calc_rsi
@@ -295,6 +298,44 @@ class PaperTradeTracker:
                 instant=True,
             )
 
+            # --- Real trading hook ---
+            risk_gate = RealTradeRiskGate(session)
+            allowed, reason, size_usdt = risk_gate.can_trade(
+                tier=tier or 3,
+                strategy=strategy,
+                entry_price=entry_price,
+            )
+            if allowed and size_usdt > 0:
+                try:
+                    cfg = TradingConfigRepository(session).get()
+                    client = OKXTradingClient(cfg.api_key, cfg.api_secret, cfg.api_passphrase)
+                    client.place_order(
+                        inst_id=symbol,
+                        direction=direction,
+                        size_usdt=size_usdt,
+                        entry_price=entry_price,
+                        sl_price=trade.sl_price,
+                        tp_price=trade.tp_price,
+                        leverage=cfg.max_leverage,
+                    )
+                    # Mark trade as real
+                    trade.mode = "real"
+                    session.flush()
+                    log.info(
+                        "real_trade.placed",
+                        symbol=symbol,
+                        strategy=strategy,
+                        direction=direction,
+                        size_usdt=str(size_usdt),
+                        entry=str(entry_price),
+                        sl=str(trade.sl_price),
+                        tp=str(trade.tp_price),
+                    )
+                except Exception:
+                    log.exception("real_trade.place_failed", symbol=symbol, strategy=strategy)
+            else:
+                log.info("real_trade.skipped", symbol=symbol, reason=reason)
+
     def check_pending_confirmations(
         self,
         session: Session,
@@ -436,6 +477,49 @@ class PaperTradeTracker:
                     atr=pending.atr_value,
                     wait_minutes=round(wait_min, 1),
                 )
+
+                # --- Real trading hook ---
+                risk_gate = RealTradeRiskGate(session)
+                allowed, reason, size_usdt = risk_gate.can_trade(
+                    tier=pending.tier or 3,
+                    strategy=pending.strategy,
+                    entry_price=entry_price,
+                )
+                if allowed and size_usdt > 0:
+                    try:
+                        cfg = TradingConfigRepository(session).get()
+                        client = OKXTradingClient(cfg.api_key, cfg.api_secret, cfg.api_passphrase)
+                        client.place_order(
+                            inst_id=pending.symbol,
+                            direction=pending.direction,
+                            size_usdt=size_usdt,
+                            entry_price=entry_price,
+                            sl_price=trade.sl_price,
+                            tp_price=trade.tp_price,
+                            leverage=cfg.max_leverage,
+                        )
+                        # Mark trade as real
+                        trade.mode = "real"
+                        session.flush()
+                        log.info(
+                            "real_trade.placed",
+                            symbol=pending.symbol,
+                            strategy=pending.strategy,
+                            direction=pending.direction,
+                            size_usdt=str(size_usdt),
+                            entry=str(entry_price),
+                            sl=str(trade.sl_price),
+                            tp=str(trade.tp_price),
+                        )
+                    except Exception:
+                        log.exception(
+                            "real_trade.place_failed",
+                            symbol=pending.symbol,
+                            strategy=pending.strategy,
+                        )
+                else:
+                    log.info("real_trade.skipped", symbol=pending.symbol, reason=reason)
+
                 resolved += 1
 
         return resolved
