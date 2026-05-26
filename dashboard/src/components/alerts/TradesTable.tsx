@@ -8,7 +8,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { ScoreBreakdownModal } from '../ScoreBreakdownModal'
+import { TradeDetailModal } from './TradeDetailModal'
 import { useTranslation } from '../../i18n/I18nProvider'
 import type { Opportunity, PaperTrade } from '../../types/api'
 import { directionColor, gradeColor, gradeLabel, scoreCircleColor } from '../../utils/colors'
@@ -208,7 +208,7 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
   const { t } = useTranslation()
   const [sortField, setSortField] = useState<SortField>('entry_at')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null)
+  const [selectedTrade, setSelectedTrade] = useState<PaperTrade | null>(null)
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => compareTrades(a, b, sortField, sortDir)),
@@ -238,10 +238,7 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
     }
   }
 
-  const handleRowClick = (trade: PaperTrade) => {
-    const opp = opportunityMap.get(trade.opportunity_id)
-    if (opp) setSelectedOpp(opp)
-  }
+  const handleRowClick = (trade: PaperTrade) => setSelectedTrade(trade)
 
   if (loading && sortedItems.length === 0) {
     return (
@@ -300,9 +297,7 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
                   <tr
                     key={trade.id}
                     onClick={() => handleRowClick(trade)}
-                    className={`border-b border-[#21262d] transition-colors ${
-                      opp ? 'cursor-pointer hover:bg-[#21262d]/60' : 'hover:bg-[#21262d]/30'
-                    }`}
+                    className="cursor-pointer border-b border-[#21262d] transition-colors hover:bg-[#21262d]/60"
                   >
                     <td className="px-2.5 py-2 font-mono text-xs text-[#8b949e]">{idx + 1}</td>
                     <td className="px-2.5 py-2 font-mono text-xs font-semibold text-[#e6edf3]">
@@ -375,8 +370,12 @@ export function TradesTable({ items, opportunityMap, loading }: TradesTableProps
         </div>
       </div>
 
-      {selectedOpp && (
-        <ScoreBreakdownModal opportunity={selectedOpp} onClose={() => setSelectedOpp(null)} />
+      {selectedTrade && (
+        <TradeDetailModal
+          trade={selectedTrade}
+          opportunity={opportunityMap.get(selectedTrade.opportunity_id)}
+          onClose={() => setSelectedTrade(null)}
+        />
       )}
     </>
   )
