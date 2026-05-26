@@ -125,7 +125,7 @@ class MomentumStrategy(BaseStrategy):
             if min_vol > 0 and market_data.ticker is not None:
                 ticker = market_data.ticker
                 vol_24h = ticker.volume_24h_quote
-                if vol_24h is None and ticker.volume_24h_base is not None and ticker.last_price > Decimal("0"):
+                if vol_24h is None and ticker.volume_24h_base is not None and ticker.last_price > _ZERO:
                     vol_24h = ticker.volume_24h_base * ticker.last_price
                 if vol_24h is None or vol_24h < min_vol:
                     log.debug(
