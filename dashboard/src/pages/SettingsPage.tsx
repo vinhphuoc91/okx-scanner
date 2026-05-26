@@ -7,6 +7,7 @@ import {
   updateGlobalSettings,
   updateStrategySettings,
 } from '../api/client'
+import { RealTradingSettings } from '../components/settings/RealTradingSettings'
 import { useToast } from '../components/Toast'
 import type { GlobalSettings, StrategySettings, StrategySensitivity } from '../types/api'
 import { gradeColor, gradeLabel } from '../utils/colors'
@@ -496,6 +497,13 @@ export function SettingsPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-[#30363d] bg-[#161b22] p-4">
+        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">
+          Real Trading
+        </h3>
+        <RealTradingSettings />
       </div>
     </div>
   )
